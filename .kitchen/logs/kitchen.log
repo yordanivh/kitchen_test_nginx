@@ -1,3 +1,0 @@
-I, [2020-02-12T14:22:39.472438 #20527]  INFO -- Kitchen: -----> Starting Test Kitchen (v2.3.4)
-I, [2020-02-12T14:22:40.119540 #20527]  INFO -- Kitchen: -----> Destroying <default-vbox-nginx64>...
-I, [2020-02-12T14:22:43.869947 #20527]  INFO -- Kitchen: -----> Test Kitchen is finished. (0m4.40s)
