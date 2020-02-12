@@ -1,6 +1,5 @@
 # kitchen_test_nginx
-
-This Repo contains code that will create a packer image and run a kitchen test to see if nginx is installed on it.
+This is a repo that uses kitchen-test to make sure our box have all what we require, in our case we are checking for specific packages to be installed but other tests can be done with [inspec](https://www.inspec.io/).
 
 # What is this repo for
 
@@ -10,7 +9,7 @@ With this repo you can make a kitchen test to see if particular packages are ins
 
 You can use this repo to get a better understanding of how kitchen tests work
 
-# How to use this repo
+# Pre-requisites
 
 * You need to have packer and vagrant installed on you workstation
    *  for MacOS
@@ -22,18 +21,40 @@ You can use this repo to get a better understanding of how kitchen tests work
   
    *  for any other OS click [here](https://packer.io/downloads.html) for Packer and [here](https://www.vagrantup.com/downloads.html) for vagrant  
    
+* Clone this repo locally to a folder of your choice
+```
+git clone git@github.com:yordanivh/kitchen_test_nginx.git
+```
+* Go inside the newly created folder of the repo
+
+```
+cd kitchen_test_nginx
+```
+   
 * You need to have ruby installed on the system with all the dependencies
 
 ```
 brew install ruby rbenv
 ```
-  
+* To be able to run kitchen test you need to make sure the environment is set up corectly.Run these commands to do so from the current directory.
+
+```
+echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.bash_profile
+source ~/.bash_profile
+rbenv init
+echo 'eval "$(rbenv init -)"' >> ~/.bash_profile
+source ~/.bash_profile
+rbenv install 2.6.3
+rbenv local 2.6.3
+rbenv versions
+gem install bundler
+bundle install
+```
+
+# How to use this repo
+
 * This "How to" will cover macOS specifically, it may vary for other systems.
 
-* Clone this repo locally to a folder of your choice
-```
-git clone git@github.com:yordanivh/kitchen_test_nginx.git
-```
 * Go inside the newly created folder of the repo
 
 ```
@@ -71,20 +92,6 @@ vagrant  box add nginx64 ./nginx64-vbox.box --provider virtualbox --force
 ==> box: Adding box 'nginx64' (v0) for provider: 
     box: Unpacking necessary files from: file:///Users/yhalachev/repos/Packer/kitchen_test_nginx/nginx64-vbox.box
 ==> box: Successfully added box 'nginx64' (v0) for 'virtualbox'!
-```
-* to be able to run kitchen test you need to make sure the environment is set up corectly.Run these commands to do so from the current directory.
-
-```
-echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.bash_profile
-source ~/.bash_profile
-rbenv init
-echo 'eval "$(rbenv init -)"' >> ~/.bash_profile
-source ~/.bash_profile
-rbenv install 2.6.3
-rbenv local 2.6.3
-rbenv versions
-gem install bundler
-bundle install
 ```
 
 * Run the kitchen test with tese commands , below them is the expected output
