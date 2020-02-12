@@ -1,13 +1,14 @@
-# packer_nginx64
-This repo is containing code that can deploy a virtual machine image with nginx created by packer.
+# kitchen_test_nginx
+
+This Repo contains code that will create a packer image and run a kitchen test to see if nginx is installed on it.
 
 # What is this repo for
-With this repo you can create a Virtual machine image , that has some packages provisioned, using packer.Specifically it has `nginx` installed.
-And that image can be used to deploy a vm box using vagrant. In the `How to use this repo` section you can find an example of the repo works and how you can try it for yourself.
+
+With this repo you can make a kitchen test to see if particular packages are installed on a packer image.
 
 # Why you need to use this repo
-You can use this repo to gain an understanding of how Packer works together with Vagrant to create a Virtual machine image and 
-run a virtual machine off of that image.
+
+You can use this repo to get a better understanding of how kitchen tests work
 
 # How to use this repo
 
@@ -20,17 +21,23 @@ run a virtual machine off of that image.
     ```
   
    *  for any other OS click [here](https://packer.io/downloads.html) for Packer and [here](https://www.vagrantup.com/downloads.html) for vagrant  
+   
+* You need to have ruby installed on the system with all the dependencies
+
+```
+brew install ruby rbenv
+```
   
 * This "How to" will cover macOS specifically, it may vary for other systems.
 
 * Clone this repo locally to a folder of your choice
 ```
-git clone git@github.com:yordanivh/packer_nginx64.git
+git clone git@github.com:yordanivh/kitchen_test_nginx.git
 ```
 * Go inside the newly created folder of the repo
 
 ```
-cd packer_nginx64
+cd kitchen_test_nginx
 ```
 
 * You will see there two folders one containing provisioning scripts and one containig configuration that are done during installation of the virtual machine.
@@ -47,67 +54,134 @@ packer build -force template.json
 * The log of the operation will start to output to the screen.In the end this is what you should expect to get as output
 ```
 ==> Builds finished. The artifacts of successful builds are:
---> ubuntu-1604-lts-vbox: VM files in directory: output-nginx64-vbox
---> ubuntu-1604-lts-vbox: 'virtualbox' provider box: nginx64-vbox.box
-```
-* If you list the contents of the folder now you will see there are some new files and folders.
-`packer_cache` containing the iso image for the virtual machine install.
-`nginx64-vbox.box` which is the actual image to use with Vagrant.
-`output-nginx64-vbox` containing an ovf file and vmdk file that can be used by VirtualBox.
-
-* The next step is to initialize a vagrant environment in the current folder
-```
-vagrant init -m nginx64
+--> nginx64-vbox: VM files in directory: output-nginx64-vbox
+--> nginx64-vbox: 'virtualbox' provider box: nginx64-vbox.box
 ```
 
-* Add the box to vagrant
+* The next step is to add the created image of nginx64 to vagrant - here is the command for that
 
 ```
-vagrant box add nginx64 ./nginx64-vbox.box --provider virtualbox --force
+vagrant  box add nginx64 ./nginx64-vbox.box --provider virtualbox --force
+```
 
+* Here is the output that can be expected
+
+```
+==> box: Box file was not detected as metadata. Adding it directly...
+==> box: Adding box 'nginx64' (v0) for provider: 
+    box: Unpacking necessary files from: file:///Users/yhalachev/repos/Packer/kitchen_test_nginx/nginx64-vbox.box
 ==> box: Successfully added box 'nginx64' (v0) for 'virtualbox'!
 ```
-* Start the VM
+* to be able to run kitchen test you need to make sure the environment is set up corectly.Run these commands to do so from the current directory.
 
 ```
-vagrant up
+echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.bash_profile
+source ~/.bash_profile
+rbenv init
+echo 'eval "$(rbenv init -)"' >> ~/.bash_profile
+source ~/.bash_profile
+rbenv install 2.6.3
+rbenv local 2.6.3
+rbenv versions
+gem install bundler
+bundle install
 ```
 
-* After this is successfull you can login to the machine with the vagrant user and the vagrant public ssh key allready set up by packer
+* Run the kitchen test with tese commands , below them is the expected output
 
 ```
-vagrant ssh
+bundle exec kitchen converge
 ```
-  * Here is where packer set up the ssh access
+Expected output
 ```
-==> nginx64-vbox: Connecting to raw.githubusercontent.com (raw.githubusercontent.com)|151.101.128.133|:443... connected.
-==> nginx64-vbox: HTTP request sent, awaiting response... 200 OK
-==> nginx64-vbox: Length: 409 [text/plain]
-==> nginx64-vbox: Saving to: ‘/home/vagrant/.ssh/authorized_keys’
-==> nginx64-vbox:
-==> nginx64-vbox:      0K                                                       100% 84.2M=0s
-==> nginx64-vbox:
-==> nginx64-vbox: 2020-02-07 14:01:00 (84.2 MB/s) - ‘/home/vagrant/.ssh/authorized_keys’ saved [409/409]
-==> nginx64-vbox:
-
+-----> Starting Test Kitchen (v2.3.4)
+-----> Creating <default-vbox-nginx64>...
+       Bringing machine 'default' up with 'virtualbox' provider...
+       ==> default: Importing base box 'nginx64'...
+==> default: Matching MAC address for NAT networking...
+       ==> default: Setting the name of the VM: kitchen-kitchen_test_nginx-default-vbox-nginx64-d8a4e8de-070a-4874-8dc3-ffd29b7641f0
+       ==> default: Clearing any previously set network interfaces...
+       ==> default: Preparing network interfaces based on configuration...
+           default: Adapter 1: nat
+       ==> default: Forwarding ports...
+           default: 22 (guest) => 2222 (host) (adapter 1)
+       ==> default: Running 'pre-boot' VM customizations...
+       ==> default: Booting VM...
+       ==> default: Waiting for machine to boot. This may take a few minutes...
+           default: SSH address: 127.0.0.1:2222
+           default: SSH username: vagrant
+           default: SSH auth method: private key
+           default: 
+           default: Vagrant insecure key detected. Vagrant will automatically replace
+           default: this with a newly generated keypair for better security.
+           default: 
+           default: Inserting generated public key within guest...
+           default: Removing insecure key from the guest if it's present...
+           default: Key inserted! Disconnecting and reconnecting using new SSH key...
+       ==> default: Machine booted and ready!
+       ==> default: Checking for guest additions in VM...
+       ==> default: Setting hostname...
+       ==> default: Machine not provisioned because `--no-provision` is specified.
+       [SSH] Established
+       Vagrant instance <default-vbox-nginx64> created.
+       Finished creating <default-vbox-nginx64> (0m36.31s).
+-----> Converging <default-vbox-nginx64>...
+       Preparing files for transfer
+       Preparing script
+       No provisioner script file specified, skipping
+       Transferring files to <default-vbox-nginx64>
+       Downloading files from <default-vbox-nginx64>
+       Finished converging <default-vbox-nginx64> (0m0.01s).
+-----> Setting up <default-vbox-nginx64>...
+       Finished setting up <default-vbox-nginx64> (0m0.00s).
 ```
 
-* After you login to the machine you can check for nginx if it is installed on the server
+```
+bundle exec kitchen verify
+```
+Expected output:
 
 ```
-vagrant@nginx64:~$ nginx -v
-nginx version: nginx/1.10.3 (Ubuntu)
+-----> Starting Test Kitchen (v2.3.4)
+-----> Setting up <default-vbox-nginx64>...
+       Finished setting up <default-vbox-nginx64> (0m0.00s).
+-----> Verifying <default-vbox-nginx64>...
+       Loaded tests from {:path=>".Users.yhalachev.repos.Packer.kitchen_test_nginx.test.integration.default"} 
+
+Profile: tests from {:path=>"/Users/yhalachev/repos/Packer/kitchen_test_nginx/test/integration/default"} (tests from {:path=>".Users.yhalachev.repos.Packer.kitchen_test_nginx.test.integration.default"})
+Version: (not specified)
+Target:  ssh://vagrant@127.0.0.1:2222
+
+  System Package wget
+     ✔  is expected to be installed
+  System Package language-pack-en
+     ✔  is expected to be installed
+  System Package nginx
+     ✔  is expected to be installed
+
+Test Summary: 3 successful, 0 failures, 0 skipped
+       Finished verifying <default-vbox-nginx64> (0m0.17s).
+-----> Test Kitchen is finished. (0m0.81s)
 ```
 
-
-* After you are done with the tests remove the VM machine and delete all the files created by packer and vagrant. This step should be done only if you wish to go bakc the the initial state of the repo.
+* To clear out the kitchen test run 
 
 ```
-vagrant halt
-vagrant destroy
-vagrant box remove ubuntu-1604-lts
-rm -rf .vagrant Vagrantfile output-ubuntu-1604-lts-vbox ubuntu-1604-lts-vbox.box packer_cache
+bundle exec kitchen destroy
+```
+```
+-----> Starting Test Kitchen (v2.3.4)
+-----> Destroying <default-vbox-nginx64>...
+       ==> default: Forcing shutdown of VM...
+       ==> default: Destroying VM and associated drives...
+       Vagrant instance <default-vbox-nginx64> destroyed.
+       Finished destroying <default-vbox-nginx64> (0m3.75s).
+-----> Test Kitchen is finished. (0m4.40s)
 ```
 
+* To clear the vagrant box created during the test run
 
+```
+vagrant box remove -f nginx64 --provider virtualbox
+```
 
